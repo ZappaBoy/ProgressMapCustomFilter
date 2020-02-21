@@ -8,7 +8,7 @@
  * Author URI: https://molise-italia.it
  */
 
-add_shortcode("found_itineraries", "main" );
+add_shortcode("search_itineraries", "main" );
 function main($attr) {
 echo '<!DOCTYPE html>
 <html>
