@@ -9,17 +9,18 @@
  */
 
 add_shortcode("pmcf_search_itineraries", "pmcf_show_form" );
-function pmcf_show_form($attr) {
-    //load style to customize form
-    wp_enqueue_style( 'pmcf_style', plugin_dir_url(__FILE__) . "/css/style.css" );
+if( !function_exists("pmcf_show_form")) {
+    function pmcf_show_form($attr) {
+        //load style to customize form
+        wp_enqueue_style( 'pmcf_style', plugin_dir_url(__FILE__) . "/css/style.css" );
 
-    //load script to handle form
-    wp_enqueue_script('pmcf_jquery_script', plugin_dir_url(__FILE__) . "js/main.js", array('jquery'), null, true);
+        //load script to handle form
+        wp_enqueue_script('pmcf_jquery_script', plugin_dir_url(__FILE__) . "js/main.js", array('jquery'), null, true);
 
-    //load current language from polylang plugin if installed
-    $lang = function_exists("pll_current_language")? pll_current_language() : "it"; //it, en, fr
+        //load current language from polylang plugin if installed
+        $lang = function_exists("pll_current_language")? pll_current_language() : "it"; //it, en, fr
 
-    echo '
+        echo '
     <div class="testbox">
       <form action="/">
         <h1>Restaurant Feedback Form</h1>
@@ -119,7 +120,9 @@ function pmcf_show_form($attr) {
       </form>
     </div> ';
 
+    }
 }
+
 
 
 
