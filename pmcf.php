@@ -22,7 +22,7 @@ if( !function_exists("pmcf_show_form")) {
 
         echo '
     <div class="testbox">
-      <form action="/">
+      <form action="https://www.molise-italia.it/mostra-itinerario/" method="get">
         <h1>Restaurant Feedback Form</h1>
         <p>Please help us improve our restaurant services by filling in our feedback form. Thank you!</p>
         <h4>Name</h4>
@@ -114,6 +114,16 @@ if( !function_exists("pmcf_show_form")) {
         </table>
         <h4>Any comments, questions or suggestions?</h4>
         <textarea rows="5"></textarea>
+		
+		<!-- To Remove: For developing use -->
+		<h4>Post ids<span>*</span></h4>
+        <select name="selected_post_ids">
+          <option class="disabled" value="selected_post_ids" disabled selected>*Please Select*</option>
+          <option value="9008-8221">9008-8221</option>
+          <option value="9008-8221-8908">9008-8221-8908</option>
+        </select>
+		<!-- To Remove: For developing use -->
+		
         <div class="btn-block">
           <button type="submit" href="/">Send Feedback</button>
         </div>
@@ -123,7 +133,13 @@ if( !function_exists("pmcf_show_form")) {
     }
 }
 
-
-
-
-
+add_shortcode("pmcf_show_itinerary", "pmcf_show_result" );
+if( !function_exists("pmcf_show_result")) {
+    function pmcf_show_result($attr) {
+		$ids = htmlspecialchars($_GET['selected_post_ids']);
+		$post_to_show = str_replace("-",",", $ids);
+			
+		//return do_shortcode('[cspm_main_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ']');
+		return do_shortcode('[cspm_route_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
+	}
+}
