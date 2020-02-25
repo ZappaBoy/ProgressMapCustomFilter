@@ -14,9 +14,6 @@ h1, h4 {
     margin: 15px 0 4px;
     font-weight: 400;
 }
-span {
-    color: red;
-}
 .testbox {
     display: flex;
     justify-content: center;
