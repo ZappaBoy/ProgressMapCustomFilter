@@ -32,7 +32,7 @@ if( !function_exists("pmcf_show_form")) {
         </div>
         <h4>Email</h4>
         <input type="text" name="name" />
-        <h4>Location You Visited<span>*</span></h4>
+        <h4>Location You Visited</h4>
         <select>
           <option class="disabled" value="location" disabled selected>*Please Select*</option>
           <option value="1">Location 1</option>
@@ -41,14 +41,14 @@ if( !function_exists("pmcf_show_form")) {
           <option value="4">Location 4</option>
           <option value="5">Location 5</option>
         </select>
-        <h4>Day Visited<span>*</span></h4>
+        <h4>Day Visited</h4>
         <div class="day-visited">
-          <input type="date" name="dayvisited" required/>
+          <input type="date" name="dayvisited"/>
           <i class="fas fa-calendar-alt"></i>
         </div>
-        <h4>Time Visited<span>*</span></h4>
+        <h4>Time Visited</h4>
  <div class="time-visited">
-          <input type="time" name="timevisited" required/>
+          <input type="time" name="timevisited"/>
           <i class="fas fa-clock"></i>
         </div>
         <h4>Dine In / Take Out</h4>
@@ -56,7 +56,7 @@ if( !function_exists("pmcf_show_form")) {
           <label><input type="radio" value="none" name="Dine" /> Dine In</label>
           <label><input type="radio" value="none" name="Dine" /> Take Out</label>
         </div>
-        <h4>Age<span>*</span></h4>
+        <h4>Age</h4>
         <select>
           <option class="disabled" value="location" disabled selected>*Please Select*</option>
           <option value="under 13">Under 13</option>
