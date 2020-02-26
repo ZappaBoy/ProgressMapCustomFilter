@@ -1,26 +1,13 @@
-<?php
-/**
- * Plugin Name: Progress Map Custom Filter
- * Plugin URI: https://molise-italia.it
- * Description: Show custom posts with Progress Map
- * Version: 1.0
- * Author: Molise Italia
- * Author URI: https://molise-italia.it
- */
-
-add_shortcode("pmcf_search_itineraries", "pmcf_show_form" );
-if( !function_exists("pmcf_show_form")) {
-    function pmcf_show_form($attr) {
-        //load style to customize form
-        wp_enqueue_style( 'pmcf_style', plugin_dir_url(__FILE__) . "/css/style.css" );
-
-        //load script to handle form
-        wp_enqueue_script('pmcf_jquery_script', plugin_dir_url(__FILE__) . "/script/main.js", array('jquery'), null, true);
-
-        //load current language from polylang plugin if installed
-        $lang = function_exists("pll_current_language")? pll_current_language() : "it"; //it, en, fr
-
-        echo '<div class="testbox">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Form</title>
+    <link href="style.css" rel="stylesheet" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+<div class="testbox">
     <form action="/mostra-itinerario/" method="get">
         <h1>Trova il tuo itinerario ideale</h1>
         <p>Trova il tuo itinerario ideale</p>
@@ -141,18 +128,7 @@ if( !function_exists("pmcf_show_form")) {
             </div>
         </div>
     </form>
-</div> ';
-
-    }
-}
-
-add_shortcode("pmcf_show_itinerary", "pmcf_show_result" );
-if( !function_exists("pmcf_show_result")) {
-    function pmcf_show_result($attr) {
-		$ids = htmlspecialchars($_GET['selected_post_ids']);
-		$post_to_show = str_replace("-",",", $ids);
-			
-		//return do_shortcode('[cspm_main_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ']');
-		return do_shortcode('[cspm_route_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
-	}
-}
+</div>
+</body>
+<script src="main.js"></script>
+</html>
