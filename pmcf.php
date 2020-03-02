@@ -17,131 +17,87 @@ if( !function_exists("pmcf_show_form")) {
         //load script to handle form
         wp_enqueue_script('pmcf_jquery_script', plugin_dir_url(__FILE__) . "/script/main.js", array('jquery'), null, true);
 
+        //load script to handle datepicker
+        wp_enqueue_script('flatpickr_script', "https://cdn.jsdelivr.net/npm/flatpickr", array('jquery'), null, true);
+        //load style of datepicker
+        wp_enqueue_style('flatpickr_style', "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css");
+
         //load current language from polylang plugin if installed
         $lang = function_exists("pll_current_language")? pll_current_language() : "it"; //it, en, fr
 
         echo '<div class="testbox">
-    <form action="/mostra-itinerario/" method="get">
-        <h1>Trova il tuo itinerario ideale</h1>
-        <p>Trova il tuo itinerario ideale</p>
-
-        <div class="first-question">
-            <h4>Sai gia cosa visitare?</h4>
-            <div class="name">
-                <button id="yes" type="button">Si</button>
-                <button id="no" type="button">No</button>
-            </div>
-        </div>
-
-        <div class="locations">
-            <input id="campobasso" name="locations" type="checkbox" value="Campobasso">
-            <label for="campobasso"> Campobasso</label><br>
-            <input id="isernia" name="locations" type="checkbox" value="Isernia">
-            <label for="isernia"> Isernia</label><br>
-            <input id="termoli" name="locations" type="checkbox" value="Termoli">
-            <label for="termoli"> Termoli</label><br>
-        </div>
-        <div class="other-questions">
-            <h4>Email</h4>
-            <input name="name" type="text"/>
-            <h4>Location You Visited</h4>
-            <select>
-                <option class="disabled" disabled selected value="location">*Please Select*</option>
-                <option value="1">Location 1</option>
-                <option value="2">Location 2</option>
-                <option value="3">Location 3</option>
-                <option value="4">Location 4</option>
-                <option value="5">Location 5</option>
-            </select>
-            <h4>Day Visited</h4>
-            <div class="day-visited">
-                <input name="dayvisited" type="date"/>
-                <i class="fas fa-calendar-alt"></i>
-            </div>
-            <h4>Time Visited</h4>
-            <div class="time-visited">
-                <input name="timevisited" type="time"/>
-                <i class="fas fa-clock"></i>
-            </div>
-            <h4>Dine In / Take Out</h4>
+    <form class="bot-question-form" action="/mostra-itinerario/" method="get">
+        <div class="question-1">
+            <h4>Qual è il tuo viaggio ideale?</h4>
             <div class="question-answer">
-                <label><input name="Dine" type="radio" value="none"/> Dine In</label>
-                <label><input name="Dine" type="radio" value="none"/> Take Out</label>
+                <button class="answer1" type="button">Immerso tra archeologia, arte e storia(archeologia, arte e storia)</button>
+                <button class="answer2" type="button">Tra sole, spiagge e coste mozzafiato (il mare)</button>
+                <button class="answer3" type="button">In una baita in montagna (la montagna)</button>
             </div>
-            <h4>Age</h4>
-            <select>
-                <option class="disabled" disabled selected value="location">*Please Select*</option>
-                <option value="under 13">Under 13</option>
-                <option value="13-17">13-17</option>
-                <option value="18-24">18-24</option>
-                <option value="25-34">25-34</option>
-                <option value="35-44">35-44</option>
-                <option value="45-54">45-54</option>
-                <option value="55 or older">55 or older</option>
-            </select>
-            <h4>Untitled</h4>
-            <table>
-                <tr>
-                    <th class="first-col"></th>
-                    <th>Amazing</th>
-                    <th>Good</th>
-                    <th>Decent</th>
-                    <th>Disappointing</th>
-                </tr>
-                <tr>
-                    <td class="first-col">Food Quality</td>
-                    <td><input name="Food" type="radio" value="none"/></td>
-                    <td><input name="Food" type="radio" value="none"/></td>
-                    <td><input name="Food" type="radio" value="none"/></td>
-                    <td><input name="Food" type="radio" value="none"/></td>
-                </tr>
-                <tr>
-                    <td class="first-col">Overall Service Quality</td>
-                    <td><input name="Service" type="radio" value="none"/></td>
-                    <td><input name="Service" type="radio" value="none"/></td>
-                    <td><input name="Service" type="radio" value="none"/></td>
-                    <td><input name="Service" type="radio" value="none"/></td>
-                </tr>
-                <tr>
-                    <td class="first-col">Speed of Service</td>
-                    <td><input name="Speed" type="radio" value="none"/></td>
-                    <td><input name="Speed" type="radio" value="none"/></td>
-                    <td><input name="Speed" type="radio" value="none"/></td>
-                    <td><input name="Speed" type="radio" value="none"/></td>
-                </tr>
-                <tr>
-                    <td class="first-col">Price</td>
-                    <td><input name="Price" type="radio" value="none"/></td>
-                    <td><input name="Price" type="radio" value="none"/></td>
-                    <td><input name="Price" type="radio" value="none"/></td>
-                    <td><input name="Price" type="radio" value="none"/></td>
-                </tr>
-                <tr>
-                    <td class="first-col">Overall Experience</td>
-                    <td><input name="Experience" type="radio" value="none"/></td>
-                    <td><input name="Experience" type="radio" value="none"/></td>
-                    <td><input name="Experience" type="radio" value="none"/></td>
-                    <td><input name="Experience" type="radio" value="none"/></td>
-                </tr>
-            </table>
-            <h4>Any comments, questions or suggestions?</h4>
-            <textarea rows="5"></textarea>
+        </div>
+        <div class="question-2">
+            <h4>Cosa porti sempre con te?</h4>
+            <div class="question-answer">
+                <button class="answer1" type="button">Scarpe da trekking, zaino e macchina fotografica (vacanze nella natura)</button>
+                <button class="answer2" type="button">Guida storica dei posti, penna e taccuino (paesi e culture)</button>
+                <button class="answer3" type="button">Accappatoio, olio per massaggi e Sali da bagno (benessere)</button>
 
-            <!-- To Remove: For developing use -->
-            <h4>Post ids<span>*</span></h4>
-            <select name="selected_post_ids">
-                <option class="disabled" disabled selected value="selected_post_ids">*Please Select*</option>
-                <option value="9008-8221">9008-8221</option>
-                <option value="9008-8221-8908">9008-8221-8908</option>
-            </select>
-            <!-- To Remove: For developing use -->
+                <button class="previews-question" type="button"><i class="fas fa-long-arrow-alt-left"></i>Torna alla domanda precedente</button>
+            </div>
+        </div>
+        <div class="question-3">
+            <h4>In un break cosa ti piacerebbe?</h4>
+            <div class="question-answer">
+                <button class="answer1" type="button">Un cocktail su una spiaggia mozzafiato (il mare)</button>
+                <button class="answer2" type="button">Un calice di vino in un borgo caratteristico(paesi e culture)</button>
+                <button class="answer3" type="button">Degustazione di prodotti locali e unici (i sapori)</button>
 
-            <div class="btn-block">
-                <button href="/" type="submit">Send Feedback</button>
+                <button class="previews-question" type="button"><i class="fas fa-long-arrow-alt-left"></i>Torna alla domanda precedente</button>
+            </div>
+        </div>
+        <div class="question-4">
+            <h4>Cosa ti farebbe più emozionare?</h4>
+            <div class="question-answer">
+                <button class="answer1" type="button">La storia di un luogo (archeologia...)</button>
+                <button class="answer2" type="button">La natura che ti circonda(vacanze nella natura)</button>
+                <button class="answer3" type="button">La scoperta delle tradizioni(le tradizioni)</button>
+
+                <button class="previews-question" type="button"><i class="fas fa-long-arrow-alt-left"></i>Torna alla domanda precedente</button>
+            </div>
+        </div>
+        <div class="question-5">
+            <h4>Che attività ti piacerebbe fare?</h4>
+            <div class="question-answer">
+                <button class="answer1" type="button">Sci, passeggiate in montagna e all\'aria aperta (la montagna)</button>
+                <button class="answer2" type="button">Rilassarti in una spa da sogno(benessere)</button>
+                <button class="answer3" type="button">Assaporare prodotti unici e scoprirne la storia(le tradizioni , i sapori)</button>
+
+                <button class="previews-question" type="button"><i class="fas fa-long-arrow-alt-left"></i>Torna alla domanda precedente</button>
+            </div>
+        </div>
+        <div class="question-6">
+            <h4>Quale di queste immagini rappresenta più ciò che vuoi da una vacanza?</h4>
+            <div class="question-answer">
+                <button class="answer1" type="button">immagine mare</button>
+                <button class="answer2" type="button">immagine montagna</button>
+                <button class="answer3" type="button">immagine archeologia, arte e storia</button>
+                <button class="answer4" type="button">immagine vacanze nella natura</button>
+                <button class="answer5" type="button">immagine paesi e culture, tradizioni, i sapori (l\'immagine è una ma comprende tutte e 3 le categorie perché sono molto simili)</button>
+
+                <button class="previews-question" type="button"><i class="fas fa-long-arrow-alt-left"></i>Torna alla domanda precedente</button>
+            </div>
+        </div>
+        <div class="question-7">
+            <h4>Sai che giorni verrai qui?</h4>
+            <div class="question-answer">
+                <input class="date-range-picker" type="text" placeholder="Select Date.." readonly="readonly"/>
+                <button class="answer1" type="button">Si</button>
+                <button class="answer2" type="button">No</button>
+                <button class="previews-question" type="button"><i class="fas fa-long-arrow-alt-left"></i>Torna alla domanda precedente</button>
             </div>
         </div>
     </form>
-</div> ';
+    </div>';
 
     }
 }
