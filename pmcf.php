@@ -156,3 +156,52 @@ if( !function_exists("pmcf_show_result")) {
 		return do_shortcode('[cspm_route_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
 	}
 }
+
+if( !function_exists("pmcf_process_the_answer")) {
+    function pmcf_process_the_answer($attr) {
+
+        /**
+        Categorie Risorse:
+        Archeologia, arte e storia
+        Vacanze nella natura  
+        Paesi e culture
+        Le tradizioni
+        I sapori 
+        Il mare
+        La montagna
+        Benessere
+        **/
+        //Define categories
+        $categories = ["Archeologia, arte e storia", "Vacanze nella natura", "Paesi e culture", "Le tradizioni", "I sapori", "Il mare", "La montagna", "Benessere"];
+
+        $answers = ["Archeologia, arte e storia", "Vacanze nella natura", "Paesi e culture", "Vacanze nella natura", "Benessere", "Vacanze nella natura"];
+        $days = 4;
+        $poi_per_day = 3;
+        $poi = new SplFixedArray($days * $poi_per_day);
+
+        // Init balances
+        $balance = new SplFixedArray(sizeof($categories));
+        $pos = 0;
+        foreach ($categories as $category) {
+            $obj = (object) [
+                'category' => $category,
+                'balance' => 0
+            ];
+            $balance[$pos] = json_encode($obj);
+            $pos++;
+        }
+        unset($category);
+
+        //Calculate balances
+        foreach ($answers as $value) {
+            $pos = array_search($value, (array)$categories);
+            $obj = json_decode($balance[$pos]);
+            $obj->balance++;
+            $balance[$pos] = json_encode($obj);
+        }
+        print_r($balance);
+        unset($value);
+
+        // TODO: Filter based on category balance
+    }
+}
