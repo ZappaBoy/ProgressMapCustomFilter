@@ -16,6 +16,7 @@ h1, h4 {
 }
 .testbox {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: inherit;
@@ -137,4 +138,9 @@ button:hover {
     th, td {
         word-break: keep-all;
     }
+}
+
+.question-answer {
+    display: flex;
+    flex-direction: column;
 }
