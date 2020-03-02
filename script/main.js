@@ -1,50 +1,36 @@
 jQuery.noConflict()(function($){
     "use strict";
+
     $(document).ready(function() {
         let answerObj = [];
 
+
+
+        for (let questionIndex = 1; questionIndex <= 7; questionIndex++) {
+            $('.question-' + questionIndex).hide();
+            for (let answerIndex = 1; answerIndex <= 3; ++answerIndex) {
+                $('.question-' + questionIndex + ' .answer' + answerIndex).click(function () {
+                    //hide this question container and show the next one
+                    $('.question-' + questionIndex).hide('slow');
+
+                    $('.question-' + (questionIndex +1)).show();
+
+                    answerObj[questionIndex] = answerIndex;
+                });
+
+                $('.question-' + questionIndex + ' .previews-question').click(function () {
+                    //hide this question container and show the next one
+                    $('.question-' + questionIndex).hide('slow');
+
+                    $('.question-' + (questionIndex -1)).show();
+                });
+            }
+        }
+
         $(".question-1").show();
-        $(".question-2").hide();
-        $(".question-3").hide();
-        $(".question-4").hide();
 
-        //Question 1
-        $('.question-1 .answer1').click(function () {
-            $(".question-1").hide("slow");
-            $(".question-2").show();
-            answerObj[0] = 1;
-        });
-        $('.question-1 .answer2').click(function () {
-            $(".question-1").hide();
-            $(".question-2").show();
-            answerObj[0] = 2;
-        });
-        $('.question-1 .answer3').click(function () {
-            $(".question-1").hide();
-            $(".question-1").show();
-            answerObj[0] = 3;
-        });
-
-        //Question 2
-        $('.question-2 .answer1').click(function () {
-            $(".question-1").hide();
-            $(".question-2").hide();
-            $(".question-3").show();
-        });
-        $('.question-2 .answer2').click(function () {
-            $(".question-1").hide();
-            $(".question-2").hide();
-            $(".question-3").show();
-        });
-        $('.question-2 .answer3').click(function () {
-            $(".question-1").hide();
-            $(".question-2").hide();
-            $(".question-3").show();
-        });
-        $('.question-2 .previews-question').click(function () {
-            $(".question-1").show();
-            $(".question-2").hide();
-            $(".question-3").hide();
+        $('.date-range-picker').flatpickr({
+            mode: "range"
         });
 
 
