@@ -105,30 +105,31 @@ if( !function_exists("pmcf_show_form")) {
 add_shortcode("pmcf_show_itinerary", "pmcf_show_result" );
 if( !function_exists("pmcf_show_result")) {
     function pmcf_show_result($attr) {
-		/*$ids = htmlspecialchars($_GET['selected_post_ids']);
-		$post_to_show = str_replace("-",",", $ids);*/
+        /*$ids = htmlspecialchars($_GET['selected_post_ids']);
+        $post_to_show = str_replace("-",",", $ids);*/
 
-		$post_to_show = pmcf_process_the_answer(); //@TODO pass agrument to function: dates and array of answers
-			
-		//return do_shortcode('[cspm_main_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ']');
-		return do_shortcode('[cspm_route_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
-	}
+        $post_to_show = pmcf_process_the_answer(); //@TODO pass agrument to function: dates and array of answers
+
+        //print_r($post_to_show);
+        //return do_shortcode('[cspm_main_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ']');
+        return do_shortcode('[cspm_route_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
+    }
 }
 
 if( !function_exists("pmcf_process_the_answer")) {
     function pmcf_process_the_answer() {
 
         /**
-        * Categories:
-        *   Archeologia, arte e storia
-        *   Vacanze nella natura  
-        *   Paesi e culture
-        *   Le tradizioni
-        *   I sapori 
-        *   Il mare
-        *   La montagna
-        *   Benessere
-        */
+         * Categories:
+         *   Archeologia, arte e storia
+         *   Vacanze nella natura  
+         *   Paesi e culture
+         *   Le tradizioni
+         *   I sapori 
+         *   Il mare
+         *   La montagna
+         *   Benessere
+         */
 
         /**
          * Define categories
@@ -193,39 +194,40 @@ if( !function_exists("pmcf_process_the_answer")) {
             }
             $moved++;
         }
-        print_r($balance);
 
         // TODO: Filter based on category balance
 
         $i = 0;
         $poi_finded = 0;
-        while($i < sizeof($balance) || $poi_finded < $poi_to_find){
-            $category = (json_decode($balance[$i]))->category;
-            $balance = (json_decode($balance[$i]))->balance;
+        while ($i < sizeof((array)$balance) && $poi_finded < $poi_to_find) {
+            $obj = json_decode($balance[$i]);
+            $category = $obj->category;
+            $balance = $obj->balance;
 
             $query_args = array(
-                'category_name'  => $category,
-                'fields'         => 'ids',
-                'orderby'        => 'rand',
+                'category_name' => $category,
+                'fields' => 'ids',
+                'orderby' => 'rand',
                 'post__not_in' => (array)$poi,
                 'posts_per_page' => $poi_to_find + 1
             );
 
-            $query = new WP_Query( $query_args );
+            $query = new WP_Query($query_args);
             while($query->have_posts()) {
                 $id = get_the_ID();
-                if ($poi_finded < $poi_to_find && !in_array($id, (array)$poi)) {
-                    $poi[$poi_finded] = $id;
-
-                    $poi_finded++;
-                    $poi_to_find--;
-                } else {
-                    $poi_to_find = 0;
-                    break;
+                if (!in_array($id, (array)$poi)) {
+                    if ($poi_finded < $poi_to_find) {
+                        $poi[$poi_finded] = $id;
+                        $poi_finded++;
+                        $poi_to_find--;
+                        print_r("$id");
+                    } else {
+                        $poi_to_find = 0;
+                    }
                 }
             }
             wp_reset_postdata();
-
+            $i++;
             // TODO: Check proportionally number of posts
             /**
              * Dividing by 6: probability of encounter 2 as balance
@@ -251,6 +253,7 @@ if( !function_exists("pmcf_process_the_answer")) {
             //}
         }
 
-        return implode( ", ", (array) $poi);
+        //return implode( ", ", (array) $poi);
+        return ($poi);
     }
 }
