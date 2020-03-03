@@ -4,6 +4,7 @@ jQuery.noConflict()(function($){
     $(document).ready(function() {
         let answers = [];
 
+        const redirectPageUrl = "/trova-itinerario/";
         const ANSWERS_MAP = new Map();
         ANSWERS_MAP.set(1, ["Archeologia, arte e storia", "Il mare", "La montagna"]);
         ANSWERS_MAP.set(2, ["Vacanze nella natura", "Paesi e culture", "Benessere"]);
@@ -23,16 +24,13 @@ jQuery.noConflict()(function($){
                             endDate: $('.date-range-picker').val().split(" to ")[1]
                         };
 
-                        console.log(postParams);
-
-                        //$.redirect('/show-itinerari', postParams, 'get');
+                        $.redirect(redirectPageUrl, postParams, 'post');
                     } else if (questionIndex === 7 && answerIndex === 2) {
                         let postParams = {
                             categories : buildCategoriesString(answers)
                         };
 
-                        console.log(postParams);
-                        //$.redirect('/show-itinerari', postParams, 'get');
+                        $.redirect(redirectPageUrl, postParams, 'get');
                     } else {
                         //hide this question container and show the next one
                         $('.question-' + questionIndex).hide('slow');
