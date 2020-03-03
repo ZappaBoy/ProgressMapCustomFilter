@@ -161,24 +161,29 @@ if( !function_exists("pmcf_process_the_answer")) {
     function pmcf_process_the_answer($attr) {
 
         /**
-        Categorie Risorse:
-        Archeologia, arte e storia
-        Vacanze nella natura  
-        Paesi e culture
-        Le tradizioni
-        I sapori 
-        Il mare
-        La montagna
-        Benessere
-        **/
-        //Define categories
+        * Categories:
+        *   Archeologia, arte e storia
+        *   Vacanze nella natura  
+        *   Paesi e culture
+        *   Le tradizioni
+        *   I sapori 
+        *   Il mare
+        *   La montagna
+        *   Benessere
+        */
+
+        /**
+         * Define categories
+         */
         $categories = ["Archeologia, arte e storia", "Vacanze nella natura", "Paesi e culture", "Le tradizioni", "I sapori", "Il mare", "La montagna", "Benessere"];
 
         $answers = ["Archeologia, arte e storia", "Vacanze nella natura", "Paesi e culture", "Vacanze nella natura", "Benessere", "Vacanze nella natura"];
         $days = 4;
         $poi_per_day = 3;
 
-        //7 static poi if no day provided
+        /**
+         * 7 static poi if no day provided
+         */
         $poi_to_find = 7;
         if ($days > 0){
             $poi_to_find = $days * $poi_per_day;
@@ -186,7 +191,9 @@ if( !function_exists("pmcf_process_the_answer")) {
 
         $poi = new SplFixedArray($poi_to_find);
 
-        // Init balances
+        /**
+         * Init balances
+         */
         $balance = new SplFixedArray(sizeof($categories));
         $pos = 0;
         foreach ($categories as $category) {
@@ -199,7 +206,9 @@ if( !function_exists("pmcf_process_the_answer")) {
         }
         unset($category);
 
-        //Calculate balances
+        /**
+         * Calculate balances
+         */
         foreach ($answers as $value) {
             $pos = array_search($value, (array)$categories);
             $obj = json_decode($balance[$pos]);
@@ -208,7 +217,9 @@ if( !function_exists("pmcf_process_the_answer")) {
         }
         unset($value);
 
-        // Sorting balances: crescent order
+        /**
+         * Sorting balances: crescent order
+         */
         $moved = 0;
         while ($moved < sizeof($balance) - 1) {
             $i = 0;
@@ -243,8 +254,10 @@ if( !function_exists("pmcf_process_the_answer")) {
             $query = new WP_Query( $query_args );
 
             // TODO: Check proportionally number of posts
-            // Dividing by 6: probability of encounter 2 as balance
-            // Adding 1: Roundup
+            /**
+             * Dividing by 6: probability of encounter 2 as balance
+             * Adding 1: Roundup
+             */
             if ($days > 0) {
                 $query = array_slice((array)$query, 0, ($balance / 6 * $poi_to_find) + 1 );
             }else {
