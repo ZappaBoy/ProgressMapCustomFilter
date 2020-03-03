@@ -105,8 +105,10 @@ if( !function_exists("pmcf_show_form")) {
 add_shortcode("pmcf_show_itinerary", "pmcf_show_result" );
 if( !function_exists("pmcf_show_result")) {
     function pmcf_show_result($attr) {
-		$ids = htmlspecialchars($_GET['selected_post_ids']);
-		$post_to_show = str_replace("-",",", $ids);
+		/*$ids = htmlspecialchars($_GET['selected_post_ids']);
+		$post_to_show = str_replace("-",",", $ids);*/
+
+		$post_to_show = pmcf_process_the_answer(); //@TODO pass agrument to function: dates and array of answers
 			
 		//return do_shortcode('[cspm_main_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ']');
 		return do_shortcode('[cspm_route_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
@@ -114,7 +116,7 @@ if( !function_exists("pmcf_show_result")) {
 }
 
 if( !function_exists("pmcf_process_the_answer")) {
-    function pmcf_process_the_answer($attr) {
+    function pmcf_process_the_answer() {
 
         /**
         * Categories:
@@ -205,32 +207,50 @@ if( !function_exists("pmcf_process_the_answer")) {
                 'category_name'  => $category,
                 'fields'         => 'ids',
                 'orderby'        => 'rand',
-                'posts_per_page' => strval($poi_to_find + 1)
+                'post__not_in' => (array)$poi,
+                'posts_per_page' => $poi_to_find + 1
             );
 
             $query = new WP_Query( $query_args );
+            while($query->have_posts()) {
+                $id = get_the_ID();
+                if ($poi_finded < $poi_to_find && !in_array($id, (array)$poi)) {
+                    $poi[$poi_finded] = $id;
+
+                    $poi_finded++;
+                    $poi_to_find--;
+                } else {
+                    $poi_to_find = 0;
+                    break;
+                }
+            }
+            wp_reset_postdata();
 
             // TODO: Check proportionally number of posts
             /**
              * Dividing by 6: probability of encounter 2 as balance
              * Adding 1: Roundup
              */
-            if ($days > 0) {
+            /*if ($days > 0) {
                 $query = array_slice((array)$query, 0, ($balance / 6 * $poi_to_find) + 1 );
             }else {
                 $query = array_slice((array)$query, 0, $balance / 6);
-            }
+            }*/
 
-            foreach ( $query as $id )
-                if ($poi_finded < $poi_to_find && !in_array($id, (array)$poi)) {
+            /*foreach ( $query as $id ) {
+                print_r($id);
+                /*if ($poi_finded < $poi_to_find && !in_array($id, (array)$poi)) {
                     $poi[$poi_finded] = $id;
 
                     $poi_finded++;
                     $poi_to_find--;
-                }else{
+                } else {
                     $poi_to_find = 0;
                     break;
-                }
+                }*/
+            //}
         }
+
+        return implode( ", ", (array) $poi);
     }
 }
