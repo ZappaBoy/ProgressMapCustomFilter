@@ -136,8 +136,11 @@ if( !function_exists("pmcf_show_result")) {
 
         $start_date = htmlspecialchars($_POST['startDate']);
         $end_date = htmlspecialchars($_POST['endDate']);
+        $datetime1 = new DateTime($start_date);
+        $datetime2 = new DateTime($end_date);
+        $days = $datetime1->diff($datetime2);;
 
-        $post_to_show = pmcf_process_the_answer(); //@TODO pass agrument to function: dates and array of answers
+        $post_to_show = pmcf_process_the_answer($categories, $days); //@TODO pass agrument to function: dates and array of answers
 
         //print_r($post_to_show);
         //return do_shortcode('[cspm_main_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ']');
@@ -146,7 +149,7 @@ if( !function_exists("pmcf_show_result")) {
 }
 
 if( !function_exists("pmcf_process_the_answer")) {
-    function pmcf_process_the_answer() {
+    function pmcf_process_the_answer($answers, $days) {
 
         /**
          * Categories:
@@ -165,8 +168,8 @@ if( !function_exists("pmcf_process_the_answer")) {
          */
         $categories = ["Archeologia, arte e storia", "Vacanze nella natura", "Paesi e culture", "Le tradizioni", "I sapori", "Il mare", "La montagna", "Benessere"];
 
-        $answers = ["Archeologia, arte e storia", "Vacanze nella natura", "Paesi e culture", "Vacanze nella natura", "Benessere", "Vacanze nella natura"];
-        $days = 4;
+        //$answers = ["Archeologia, arte e storia", "Vacanze nella natura", "Paesi e culture", "Vacanze nella natura", "Benessere", "Vacanze nella natura"];
+        //$days = 4;
         $poi_per_day = 3;
 
         /**
