@@ -177,7 +177,14 @@ if( !function_exists("pmcf_process_the_answer")) {
         $answers = ["Archeologia, arte e storia", "Vacanze nella natura", "Paesi e culture", "Vacanze nella natura", "Benessere", "Vacanze nella natura"];
         $days = 4;
         $poi_per_day = 3;
-        $poi = new SplFixedArray($days * $poi_per_day);
+
+        //7 static poi if no day provided
+        $poi_to_find = 7;
+        if ($days > 0){
+            $poi_to_find = $days * $poi_per_day;
+        }
+
+        $poi = new SplFixedArray($poi_to_find);
 
         // Init balances
         $balance = new SplFixedArray(sizeof($categories));
@@ -199,9 +206,61 @@ if( !function_exists("pmcf_process_the_answer")) {
             $obj->balance++;
             $balance[$pos] = json_encode($obj);
         }
-        print_r($balance);
         unset($value);
 
+        // Sorting balances: crescent order
+        $moved = 0;
+        while ($moved < sizeof($balance) - 1) {
+            $i = 0;
+            while ($i < sizeof($balance) - 1 - $moved) {
+                $first_obj = json_decode($balance[$i]);
+                $second_obj = json_decode($balance[$i + 1]);
+                if ($first_obj->balance < $second_obj->balance) {
+                    $tmp = $balance[$i + 1];
+                    $balance[$i + 1] = $balance[$i];
+                    $balance[$i] = $tmp;
+                }
+                $i++;
+            }
+            $moved++;
+        }
+        print_r($balance);
+
         // TODO: Filter based on category balance
+
+        $i = 0;
+        $poi_finded = 0;
+        while($i < sizeof($balance) || $poi_finded < $poi_to_find){
+            $category = (json_decode($balance[$i]))->category;
+            $balance = (json_decode($balance[$i]))->balance;
+
+            $query_args = array(
+                'category_name'  => $category,
+                'fields'         => 'ids',
+                'orderby'        => 'rand'
+            );
+
+            $query = new WP_Query( $query_args );
+
+            // TODO: Check proportionally number of posts
+            // Dividing by 6: probability of encounter 2 as balance
+            // Adding 1: Roundup
+            if ($days > 0) {
+                $query = array_slice((array)$query, 0, ($balance / 6 * $poi_to_find) + 1 );
+            }else {
+                $query = array_slice((array)$query, 0, $balance / 6);
+            }
+
+            foreach ( $query as $id )
+                if ($poi_finded < $poi_to_find) {
+                    $poi[$poi_finded] = $id;
+
+                    $poi_finded++;
+                    $poi_to_find--;
+                }else{
+                    $poi_to_find = 0;
+                    break;
+                }
+        }
     }
 }
