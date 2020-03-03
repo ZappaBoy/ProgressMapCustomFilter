@@ -145,14 +145,16 @@ button:hover {
     flex-direction: column;
     align-items: center;
 }
+.bot-question-form h4{
+    text-align: center;
+}
 .question-answer {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
-.question-answer .answer1, .question-answer .answer2, .question-answer .answer3 {
-    width: auto !important;
-    max-width: 500px;
+.question-answer .answer1, .question-answer .answer2, .question-answer .answer3, .question-answer .answer4, .question-answer .answer5  {
+    width: 500px !important;
     margin-bottom: 10px;
 }
 .question-answer .previews-question {
