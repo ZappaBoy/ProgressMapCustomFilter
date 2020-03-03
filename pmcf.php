@@ -174,7 +174,7 @@ if( !function_exists("pmcf_process_the_answer")) {
         unset($value);
 
         /**
-         * Sorting balances: crescent order
+         * Sorting balances: crescent order //TODO: Insertion sort too fast
          */
         $moved = 0;
         while ($moved < sizeof($balance) - 1) {
@@ -204,7 +204,8 @@ if( !function_exists("pmcf_process_the_answer")) {
             $query_args = array(
                 'category_name'  => $category,
                 'fields'         => 'ids',
-                'orderby'        => 'rand'
+                'orderby'        => 'rand',
+                'posts_per_page' => strval($poi_to_find + 1)
             );
 
             $query = new WP_Query( $query_args );
@@ -221,7 +222,7 @@ if( !function_exists("pmcf_process_the_answer")) {
             }
 
             foreach ( $query as $id )
-                if ($poi_finded < $poi_to_find) {
+                if ($poi_finded < $poi_to_find && !in_array($id, (array)$poi)) {
                     $poi[$poi_finded] = $id;
 
                     $poi_finded++;
