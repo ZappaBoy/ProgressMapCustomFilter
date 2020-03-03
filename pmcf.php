@@ -130,7 +130,12 @@ if( !function_exists("pmcf_show_result")) {
     function pmcf_show_result($attr) {
         /*$ids = htmlspecialchars($_GET['selected_post_ids']);
         $post_to_show = str_replace("-",",", $ids);*/
-        $categories = htmlspecialchars($_POST[]);
+
+        $categories_string = htmlspecialchars($_POST['categories']);
+        $categories = explode(" | ", $categories_string);
+
+        $start_date = htmlspecialchars($_POST['startDate']);
+        $end_date = htmlspecialchars($_POST['endDate']);
 
         $post_to_show = pmcf_process_the_answer(); //@TODO pass agrument to function: dates and array of answers
 
