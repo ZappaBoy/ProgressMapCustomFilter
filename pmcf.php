@@ -135,15 +135,13 @@ if( !function_exists("pmcf_show_result")) {
         $categories = explode(" | ", $categories_string);
 
         $days = 0;
-        if (isset($_POST['startDate']) && isset($_POST['endDate'])) {
+        if(isset($_POST['startDate']) && isset($_POST['endDate'])) {
             $start_date = htmlspecialchars($_POST['startDate']);
             $end_date = htmlspecialchars($_POST['endDate']);
-            $datetime1 = new DateTime($start_date);
-            $datetime2 = new DateTime($end_date);
-            $days = $datetime1->diff($datetime2);
+			$diff = abs(strtotime($start_date) - strtotime($end_date));
+			$days = floor(($diff)/ (60*60*24));
         }
-
-
+		
         $post_to_show = pmcf_process_the_answer($categories, $days); //@TODO pass agrument to function: dates and array of answers
         print_r($post_to_show);
         //return do_shortcode('[cspm_main_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ']');
@@ -170,7 +168,6 @@ if( !function_exists("pmcf_process_the_answer")) {
          * Define categories
          */
         $categories = ["Archeologia, arte e storia", "Vacanze nella natura", "Paesi e culture", "Le tradizioni", "I sapori", "Il mare", "La montagna", "Benessere"];
-
         //$answers = ["Archeologia, arte e storia", "Vacanze nella natura", "Paesi e culture", "Vacanze nella natura", "Benessere", "Vacanze nella natura"];
         //$days = 4;
         $poi_per_day = 3;
@@ -179,11 +176,12 @@ if( !function_exists("pmcf_process_the_answer")) {
          * 7 static poi if no day provided
          */
         $poi_to_find = 7;
+		$days = intval($days);
         print_r("Days:  " . $days);
-        if ($days > 0) {
+		echo "\n";
+        if ($days > 0){
             $poi_to_find = $days * $poi_per_day;
         }
-
         $poi = new SplFixedArray($poi_to_find);
 
         /**
@@ -192,7 +190,7 @@ if( !function_exists("pmcf_process_the_answer")) {
         $balance = new SplFixedArray(sizeof($categories));
         $pos = 0;
         foreach ($categories as $category) {
-            $obj = (object)[
+            $obj = (object) [
                 'category' => $category,
                 'balance' => 0
             ];
@@ -233,27 +231,25 @@ if( !function_exists("pmcf_process_the_answer")) {
 
         $i = 0;
         $poi_finded = 0;
-        while ($i < sizeof((array)$balance) && ($poi_to_find != 0) && ($poi_finded < sizeof((array)$poi))) {
+        while ($i < sizeof((array)$balance) && ($poi_to_find != 0) && ($poi_finded < sizeof((array) $poi))){
             $obj = json_decode($balance[$i]);
             $obj_category = $obj->category;
             $obj_balance = $obj->balance;
-
+			
+			$proportion = ( (($obj_balance)*(1.00) / (6.00) )* $poi_to_find) + 1;
             $query_args = array(
                 'category_name' => categories_slug($obj_category),
                 'fields' => 'ids',
                 'orderby' => 'rand',
                 'post__not_in' => (array)$poi,
-                'posts_per_page' => (((int)($obj_balance * (1.00) / 6.00)) * $poi_to_find) + 1
+                'posts_per_page' => $proportion
             );
-
             $query = new WP_Query($query_args);
-
-            while (($query->have_posts()) && ($poi_to_find != 0) && ($poi_finded < sizeof((array)$poi))) {
-                $query->the_post();
+						
+            while ( ($query->have_posts()) && ($poi_to_find != 0) && ($poi_finded < sizeof((array) $poi))) {				
+				$query->the_post();
                 $id = get_the_ID();
-
                 $poi[$poi_finded] = $id;
-
                 $poi_finded++;
                 $poi_to_find--;
             }
@@ -264,7 +260,6 @@ if( !function_exists("pmcf_process_the_answer")) {
     }
 }
 
-function categories_slug($cat)
-{
+function categories_slug($cat) {
     return str_replace(' ', "-", strtolower($cat)) . "-risorse";
 }
