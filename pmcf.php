@@ -177,8 +177,6 @@ if( !function_exists("pmcf_process_the_answer")) {
          */
         $poi_to_find = 7;
 		$days = intval($days);
-        print_r("Days:  " . $days);
-		echo "\n";
         if ($days > 0){
             $poi_to_find = $days * $poi_per_day;
         }
