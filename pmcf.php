@@ -134,11 +134,15 @@ if( !function_exists("pmcf_show_result")) {
         $categories_string = htmlspecialchars($_POST['categories']);
         $categories = explode(" | ", $categories_string);
 
-        $start_date = htmlspecialchars($_POST['startDate']);
-        $end_date = htmlspecialchars($_POST['endDate']);
-        $datetime1 = new DateTime($start_date);
-        $datetime2 = new DateTime($end_date);
-        $days = $datetime1->diff($datetime2);
+        $days = 0;
+        if (isset($_POST['startDate']) && isset($_POST['endDate'])) {
+            $start_date = htmlspecialchars($_POST['startDate']);
+            $end_date = htmlspecialchars($_POST['endDate']);
+            $datetime1 = new DateTime($start_date);
+            $datetime2 = new DateTime($end_date);
+            $days = $datetime1->diff($datetime2);
+        }
+
 
         $post_to_show = pmcf_process_the_answer($categories, $days); //@TODO pass agrument to function: dates and array of answers
         print_r($post_to_show);
@@ -176,9 +180,9 @@ if( !function_exists("pmcf_process_the_answer")) {
          */
         $poi_to_find = 7;
         print_r("Days:  " . $days);
-//        if ($days > 0){
-//            $poi_to_find = $days * $poi_per_day;
-//        }
+        if ($days > 0) {
+            $poi_to_find = $days * $poi_per_day;
+        }
 
         $poi = new SplFixedArray($poi_to_find);
 
@@ -188,7 +192,7 @@ if( !function_exists("pmcf_process_the_answer")) {
         $balance = new SplFixedArray(sizeof($categories));
         $pos = 0;
         foreach ($categories as $category) {
-            $obj = (object) [
+            $obj = (object)[
                 'category' => $category,
                 'balance' => 0
             ];
@@ -227,11 +231,9 @@ if( !function_exists("pmcf_process_the_answer")) {
             $moved++;
         }
 
-        // TODO: Filter based on category balance
-
         $i = 0;
         $poi_finded = 0;
-        while ($i < sizeof((array)$balance) && ($poi_to_find != 0)){
+        while ($i < sizeof((array)$balance) && ($poi_to_find != 0) && ($poi_finded < sizeof((array)$poi))) {
             $obj = json_decode($balance[$i]);
             $obj_category = $obj->category;
             $obj_balance = $obj->balance;
@@ -241,55 +243,24 @@ if( !function_exists("pmcf_process_the_answer")) {
                 'fields' => 'ids',
                 'orderby' => 'rand',
                 'post__not_in' => (array)$poi,
-                'posts_per_page' => ($obj_balance / 6 * $poi_to_find) + 1
+                'posts_per_page' => (((int)($obj_balance * (1.00) / 6.00)) * $poi_to_find) + 1
             );
 
             $query = new WP_Query($query_args);
 
-            while ( ($query->have_posts()) && ($poi_to_find != 0)) {
+            while (($query->have_posts()) && ($poi_to_find != 0) && ($poi_finded < sizeof((array)$poi))) {
                 $query->the_post();
                 $id = get_the_ID();
-                print_r($id);
-                if ($poi_finded < $poi_to_find) {
-                    $poi[$poi_finded] = $id;
 
-                    $poi_finded++;
-                    $poi_to_find--;
-                } else {
-                    $poi_to_find = 0;
-                }
+                $poi[$poi_finded] = $id;
+
+                $poi_finded++;
+                $poi_to_find--;
             }
             wp_reset_postdata();
             $i++;
-//            while($query->have_posts()) {
-//                $id = get_the_ID();
-//                if (!in_array($id, (array)$poi)) {
-//                    if ($poi_finded < $poi_to_find) {
-//                        $poi[$poi_finded] = $id;
-//                        $poi_finded++;
-//                        $poi_to_find--;
-//                        print_r("$id");
-//                    } else {
-//                        $poi_to_find = 0;
-//                    }
-//                }
-//            }
-//            wp_reset_postdata();
-//            $i++;
-            // TODO: Check proportionally number of posts
-            /**
-             * Dividing by 6: probability of encounter 2 as balance
-             * Adding 1: Roundup
-             */
-           /** if ($days > 0) {
-           $query = array_slice((array)$query, 0, ($balance / 6 * $poi_to_find) + 1 );
-           }else {
-           $query = array_slice((array)$query, 0, $balance / 6);
-           }*/
         }
-
         return implode(",", (array)$poi);
-        //return ($poi);
     }
 }
 
