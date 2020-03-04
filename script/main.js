@@ -4,13 +4,13 @@ jQuery.noConflict()(function($){
     $(document).ready(function() {
         let answers = [];
 
-        const redirectPageUrl = "/trova-itinerario/";
+        const redirectPageUrl = "/mostra-itinerario/";
         const ANSWERS_MAP = new Map();
         ANSWERS_MAP.set(1, ["Archeologia, arte e storia", "Il mare", "La montagna"]);
         ANSWERS_MAP.set(2, ["Vacanze nella natura", "Paesi e culture", "Benessere"]);
         ANSWERS_MAP.set(3, ["Il mare", "Paesi e culture", "I sapori"]);
         ANSWERS_MAP.set(4, ["Archeologia, arte e storia", "Vacanze nella natura",  "Le tradizioni"]);
-        ANSWERS_MAP.set(5, ["La montagna", "Benessere", "Le tradizioni, I sapori"]);
+        ANSWERS_MAP.set(5, ["La montagna", "Benessere", "Le tradizioni | I sapori"]);
         ANSWERS_MAP.set(6, ["Il mare", "La montagna", "Archeologia, arte e storia", "Vacanze nella natura", "Paesi e culture | Le tradizioni | I sapori"]);
 
         for (let questionIndex = 1; questionIndex <= 8; questionIndex++) {
@@ -30,7 +30,7 @@ jQuery.noConflict()(function($){
                             categories : buildCategoriesString(answers)
                         };
 
-                        $.redirect(redirectPageUrl, postParams, 'get');
+                        $.redirect(redirectPageUrl, postParams, 'post');
                     } else {
                         //hide this question container and show the next one
                         $('.question-' + questionIndex).hide('slow');

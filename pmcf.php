@@ -132,6 +132,7 @@ if( !function_exists("pmcf_show_result")) {
         $post_to_show = str_replace("-",",", $ids);*/
 
         $categories_string = htmlspecialchars($_POST['categories']);
+        print_r($categories_string);
         $categories = explode(" | ", $categories_string);
 
         $start_date = htmlspecialchars($_POST['startDate']);
@@ -141,7 +142,6 @@ if( !function_exists("pmcf_show_result")) {
         $days = $datetime1->diff($datetime2);;
 
         $post_to_show = pmcf_process_the_answer($categories, $days); //@TODO pass agrument to function: dates and array of answers
-
         //print_r($post_to_show);
         //return do_shortcode('[cspm_main_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ']');
         return do_shortcode('[cspm_route_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
@@ -176,9 +176,9 @@ if( !function_exists("pmcf_process_the_answer")) {
          * 7 static poi if no day provided
          */
         $poi_to_find = 7;
-        if ($days > 0){
-            $poi_to_find = $days * $poi_per_day;
-        }
+//        if ($days > 0){
+//            $poi_to_find = $days * $poi_per_day;
+//        }
 
         $poi = new SplFixedArray($poi_to_find);
 
@@ -231,61 +231,64 @@ if( !function_exists("pmcf_process_the_answer")) {
 
         $i = 0;
         $poi_finded = 0;
-        while ($i < sizeof((array)$balance) && $poi_finded < $poi_to_find) {
+        while ($i < sizeof((array)$balance) && ($poi_to_find != 0)){
             $obj = json_decode($balance[$i]);
-            $category = $obj->category;
-            $balance = $obj->balance;
+            $obj_category = $obj->category;
+            $obj_balance = $obj->balance;
 
             $query_args = array(
-                'category_name' => $category,
+                'category_name' => $obj_category,
                 'fields' => 'ids',
                 'orderby' => 'rand',
                 'post__not_in' => (array)$poi,
-                'posts_per_page' => $poi_to_find + 1
+                'posts_per_page' => ($obj_balance / 6 * $poi_to_find) + 1
             );
 
             $query = new WP_Query($query_args);
-            while($query->have_posts()) {
-                $id = get_the_ID();
-                if (!in_array($id, (array)$poi)) {
-                    if ($poi_finded < $poi_to_find) {
-                        $poi[$poi_finded] = $id;
-                        $poi_finded++;
-                        $poi_to_find--;
-                        print_r("$id");
-                    } else {
-                        $poi_to_find = 0;
-                    }
-                }
-            }
-            wp_reset_postdata();
-            $i++;
-            // TODO: Check proportionally number of posts
-            /**
-             * Dividing by 6: probability of encounter 2 as balance
-             * Adding 1: Roundup
-             */
-            /*if ($days > 0) {
-                $query = array_slice((array)$query, 0, ($balance / 6 * $poi_to_find) + 1 );
-            }else {
-                $query = array_slice((array)$query, 0, $balance / 6);
-            }*/
 
-            /*foreach ( $query as $id ) {
+            while ( ($query->have_posts()) && ($poi_to_find != 0)) {
+                $id = get_the_ID();
                 print_r($id);
-                /*if ($poi_finded < $poi_to_find && !in_array($id, (array)$poi)) {
+                if ($poi_finded < $poi_to_find) {
                     $poi[$poi_finded] = $id;
 
                     $poi_finded++;
                     $poi_to_find--;
                 } else {
                     $poi_to_find = 0;
-                    break;
-                }*/
-            //}
+                }
+            }
+            wp_reset_postdata();
+            print_r($poi);
+            $i++;
+//            while($query->have_posts()) {
+//                $id = get_the_ID();
+//                if (!in_array($id, (array)$poi)) {
+//                    if ($poi_finded < $poi_to_find) {
+//                        $poi[$poi_finded] = $id;
+//                        $poi_finded++;
+//                        $poi_to_find--;
+//                        print_r("$id");
+//                    } else {
+//                        $poi_to_find = 0;
+//                    }
+//                }
+//            }
+//            wp_reset_postdata();
+//            $i++;
+            // TODO: Check proportionally number of posts
+            /**
+             * Dividing by 6: probability of encounter 2 as balance
+             * Adding 1: Roundup
+             */
+           /** if ($days > 0) {
+                $query = array_slice((array)$query, 0, ($balance / 6 * $poi_to_find) + 1 );
+            }else {
+                $query = array_slice((array)$query, 0, $balance / 6);
+            }*/
         }
 
-        //return implode( ", ", (array) $poi);
-        return ($poi);
+        return implode( ",", (array) $poi);
+        //return ($poi);
     }
 }
