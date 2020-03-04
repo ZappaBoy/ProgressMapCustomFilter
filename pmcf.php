@@ -132,17 +132,16 @@ if( !function_exists("pmcf_show_result")) {
         $post_to_show = str_replace("-",",", $ids);*/
 
         $categories_string = htmlspecialchars($_POST['categories']);
-        print_r($categories_string);
         $categories = explode(" | ", $categories_string);
 
         $start_date = htmlspecialchars($_POST['startDate']);
         $end_date = htmlspecialchars($_POST['endDate']);
         $datetime1 = new DateTime($start_date);
         $datetime2 = new DateTime($end_date);
-        $days = $datetime1->diff($datetime2);;
+        $days = $datetime1->diff($datetime2);
 
         $post_to_show = pmcf_process_the_answer($categories, $days); //@TODO pass agrument to function: dates and array of answers
-        //print_r($post_to_show);
+        print_r($post_to_show);
         //return do_shortcode('[cspm_main_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ']');
         return do_shortcode('[cspm_route_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
     }
@@ -176,6 +175,7 @@ if( !function_exists("pmcf_process_the_answer")) {
          * 7 static poi if no day provided
          */
         $poi_to_find = 7;
+        print_r("Days:  " . $days);
 //        if ($days > 0){
 //            $poi_to_find = $days * $poi_per_day;
 //        }
@@ -237,7 +237,7 @@ if( !function_exists("pmcf_process_the_answer")) {
             $obj_balance = $obj->balance;
 
             $query_args = array(
-                'category_name' => $obj_category,
+                'category_name' => categories_slug($obj_category),
                 'fields' => 'ids',
                 'orderby' => 'rand',
                 'post__not_in' => (array)$poi,
@@ -247,6 +247,7 @@ if( !function_exists("pmcf_process_the_answer")) {
             $query = new WP_Query($query_args);
 
             while ( ($query->have_posts()) && ($poi_to_find != 0)) {
+                $query->the_post();
                 $id = get_the_ID();
                 print_r($id);
                 if ($poi_finded < $poi_to_find) {
@@ -259,7 +260,6 @@ if( !function_exists("pmcf_process_the_answer")) {
                 }
             }
             wp_reset_postdata();
-            print_r($poi);
             $i++;
 //            while($query->have_posts()) {
 //                $id = get_the_ID();
@@ -282,13 +282,18 @@ if( !function_exists("pmcf_process_the_answer")) {
              * Adding 1: Roundup
              */
            /** if ($days > 0) {
-                $query = array_slice((array)$query, 0, ($balance / 6 * $poi_to_find) + 1 );
-            }else {
-                $query = array_slice((array)$query, 0, $balance / 6);
-            }*/
+           $query = array_slice((array)$query, 0, ($balance / 6 * $poi_to_find) + 1 );
+           }else {
+           $query = array_slice((array)$query, 0, $balance / 6);
+           }*/
         }
 
-        return implode( ",", (array) $poi);
+        return implode(",", (array)$poi);
         //return ($poi);
     }
+}
+
+function categories_slug($cat)
+{
+    return str_replace(' ', "-", strtolower($cat)) . "-risorse";
 }
