@@ -73,3 +73,13 @@
     background-color: red;
     align-self: flex-start;
 }
+
+.flatpickr-calendar.rangeMode.animate.inline {
+    margin-bottom: 30px;
+}
+
+.date-error {
+    color: red;
+    margin-top: 0;
+    display: none;
+}

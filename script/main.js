@@ -18,13 +18,23 @@ jQuery.noConflict()(function($){
             for (let answerIndex = 1; answerIndex <= 5; ++answerIndex) {
                 $('.question-' + questionIndex + ' .answer' + answerIndex).click(function () {
                     if(questionIndex === 8) {
-                        let postParams = {
-                            categories : buildCategoriesString(answers),
-                            startDate:  $('.date-range-picker').val().split(" to ")[0],
-                            endDate: $('.date-range-picker').val().split(" to ")[1]
-                        };
+                        const startDate = new Date($('.date-range-picker').val().split(" to ")[0]);
+                        const endDate = new Date($('.date-range-picker').val().split(" to ")[1]);
 
-                        $.redirect(redirectPageUrl, postParams, 'post');
+                        const diffTime = Math.abs(endDate - startDate);
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        console.log(diffDays);
+                        if(diffDays > 20) {
+                            $('.date-error').show();
+                        } else {
+                            let postParams = {
+                                categories : buildCategoriesString(answers),
+                                startDate:  $('.date-range-picker').val().split(" to ")[0],
+                                endDate: $('.date-range-picker').val().split(" to ")[1]
+                            };
+
+                            $.redirect(redirectPageUrl, postParams, 'post');
+                        }
                     } else if (questionIndex === 7 && answerIndex === 2) {
                         let postParams = {
                             categories : buildCategoriesString(answers)
@@ -55,6 +65,7 @@ jQuery.noConflict()(function($){
 
         $('.date-range-picker').flatpickr({
             mode: "range",
+            inline: true,
             dateFormat: "Y-m-d",
             minDate: "today"
         });

@@ -107,7 +107,8 @@ if( !function_exists("pmcf_show_form")) {
                                 <input class="date-range-picker" type="text" placeholder="Select Date.." readonly="readonly"/>
                 
                                 <button class="answer1" type="button">Conferma</button>
-                
+                                <p class="date-error">Hai selezionato un intervallo temporale troppo ampio</p>
+                                
                                 <button class="previews-question" type="button"><i class="fas fa-long-arrow-alt-left"></i>Torna alla domanda precedente</button>
                             </div>
                         </div>
@@ -140,11 +141,48 @@ if( !function_exists("pmcf_show_result")) {
             $end_date = htmlspecialchars($_POST['endDate']);
 			$diff = abs(strtotime($start_date) - strtotime($end_date));
 			$days = floor(($diff)/ (60*60*24));
+            echo $days;
         }
 		
-        $post_to_show = pmcf_process_the_answer($categories, $days); //@TODO pass agrument to function: dates and array of answers
+        $post_to_show = pmcf_process_the_answer($categories, $days);
+        echo $days;
+
+        if($days == 0) {
+            return do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', $post_to_show) . '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
+        } else {
+            //count number of post to shuffle
+            $num_of_poi = count($post_to_show);
+
+            //array of number of post to show every day
+            $poi_per_day = array();
+
+            //shuffle the array of posts
+            shuffle($post_to_show);
+
+            //pick n random numbers that sum up to m
+            $num_of_poi_left = $num_of_poi;
+            for($i = 0; $i <$days; ++$i) {
+                $random_number = rand(1,(int)(($num_of_poi_left) / ($days - $i)));
+                array_push($poi_per_day, $random_number);
+                $num_of_poi_left -= $random_number;
+            }
+            $poi_per_day[$days-1] +=  $num_of_poi_left;
+
+
+            $post_counter = 0;
+            $output = '<div class="maps-container">';
+            for($i = 1; $i <=$days; ++$i) {
+                $output .= '<div class="day-' . $i . '">';
+                $output .= do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', array_slice($post_to_show, $post_counter, $poi_per_day[$i-1]) ). '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
+                $output .= '</div>';
+                $post_counter += $poi_per_day[$i-1];
+            }
+            $output .= '</div>';
+
+            return $output;
+        }
+
         //return do_shortcode('[cspm_main_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ']');
-        return do_shortcode('[cspm_route_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
     }
 }
 
@@ -253,7 +291,7 @@ if( !function_exists("pmcf_process_the_answer")) {
             wp_reset_postdata();
             $i++;
         }
-        return implode(",", (array)$poi);
+        return (array)$poi;
     }
 }
 
