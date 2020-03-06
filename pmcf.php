@@ -8,6 +8,8 @@
  * Author URI: https://molise-italia.it
  */
 
+use Phpml\Clustering\KMeans;
+
 add_shortcode("pmcf_search_itineraries", "pmcf_show_form" );
 if( !function_exists("pmcf_show_form")) {
     function pmcf_show_form($attr) {
@@ -150,40 +152,72 @@ if( !function_exists("pmcf_show_result")) {
         if($days == 0) {
             return do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', $post_to_show) . '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
         } else {
-            //count number of post to shuffle
-            $num_of_poi = count($post_to_show);
-
-            //array of number of post to show every day
-            $poi_per_day = array();
-
-            //shuffle the array of posts
-            shuffle($post_to_show);
-
-            //pick n random numbers that sum up to m
-            $num_of_poi_left = $num_of_poi;
-            for($i = 0; $i <$days; ++$i) {
-                $random_number = rand(1,(int)(($num_of_poi_left) / ($days - $i)));
-                array_push($poi_per_day, $random_number);
-                $num_of_poi_left -= $random_number;
-            }
-            $poi_per_day[$days-1] +=  $num_of_poi_left;
-
-
-            $post_counter = 0;
-            $output = '<div class="maps-container">';
-            for($i = 1; $i <=$days; ++$i) {
-                $output .= '<div class="day-' . $i . '">';
-                $output .= do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', array_slice($post_to_show, $post_counter, $poi_per_day[$i-1]) ). '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
-                $output .= '</div>';
-                $post_counter += $poi_per_day[$i-1];
-            }
-            $output .= '</div>';
-
-            return $output;
+            return get_maps_using_clustering($post_to_show, $days);
+            //return get_maps_for_days($post_to_show, $days);
         }
 
         //return do_shortcode('[cspm_main_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ']');
     }
+}
+
+function get_maps_using_clustering($post_to_show, $days){
+    //count number of post to get coords
+    $num_of_poi = count($post_to_show);
+
+    $coord = array();
+
+    for($i = 0; $i < $num_of_poi; ++$i) {
+        $lat = get_post_meta( $post_to_show[$i], 'codespacing_progress_map_lat');
+        $long = get_post_meta( $post_to_show[$i], 'codespacing_progress_map_lng');
+        $coord[$post_to_show[$i]] = array($lat, $long);
+    }
+
+    // now $coord is an array with labeled with id of post
+
+    try {
+        $kmeans = new KMeans($days);
+        $clusters = $kmeans->cluster($coord); //every cluster contains the ids of post
+
+        //TODO build the frontend and test
+
+    } catch (\Phpml\Exception\InvalidArgumentException $e) {
+        //ignored
+    }
+
+}
+
+function get_maps_for_days($post_to_show, $days) {
+
+    //count number of post to shuffle
+    $num_of_poi = count($post_to_show);
+
+    //array of number of post to show every day
+    $poi_per_day = array();
+
+    //shuffle the array of posts
+    shuffle($post_to_show);
+
+    //pick n random numbers that sum up to m
+    $num_of_poi_left = $num_of_poi;
+    for($i = 0; $i <$days; ++$i) {
+        $random_number = rand(1,(int)(($num_of_poi_left) / ($days - $i)));
+        array_push($poi_per_day, $random_number);
+        $num_of_poi_left -= $random_number;
+    }
+    $poi_per_day[$days-1] +=  $num_of_poi_left;
+
+
+    $post_counter = 0;
+    $output = '<div class="maps-container">';
+    for($i = 1; $i <=$days; ++$i) {
+        $output .= '<div class="day-' . $i . '">';
+        $output .= do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', array_slice($post_to_show, $post_counter, $poi_per_day[$i-1]) ). '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
+        $output .= '</div>';
+        $post_counter += $poi_per_day[$i-1];
+    }
+    $output .= '</div>';
+
+    return $output;
 }
 
 if( !function_exists("pmcf_process_the_answer")) {
