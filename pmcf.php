@@ -187,14 +187,30 @@ function get_maps_using_clustering($post_to_show, $days){
     
      // now $coord is an array with labeled with id of post
      try {
-         $kmeans = new KMeans($days);
-         $clusters = $kmeans->cluster($coord); //every cluster contains the ids of post
-
-         //TODO build the frontend and test
-
-         foreach ($clusters as $cluster) {
-             print_r($cluster);
-         }
+        $kmeans = new KMeans($days); //Number of cluster cannot be the same of the days because there are clusters with only once post
+        $clusters = $kmeans->cluster($coord); //every cluster contains the ids of post
+        $output = '';
+        
+        foreach ($clusters as $cluster => $post_ids) {
+            $post_to_show = array();
+         
+            foreach ($post_ids as $post_id => $coord) {
+                $post_to_show[$i] = $post_id;
+                $i++;
+            }
+            
+            $output .= '<div class="maps-container">';
+        
+            $output .= '<div class="day-' . $i . '">';
+            $output .= do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', $post_to_show ). '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
+            $output .= '</div>';
+        
+            $output .= '</div>';
+        }
+        
+        return $output;
+    
+    
      } catch (Clustering\InvalidArgumentException $e) {
          //ignored
      }
