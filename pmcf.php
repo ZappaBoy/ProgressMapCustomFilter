@@ -179,10 +179,11 @@ function get_maps_using_clustering($post_to_show, $days){
     for($i = 0; $i < $num_of_poi; ++$i) {
         $lat = get_post_meta( $post_to_show[$i], 'codespacing_progress_map_lat');
         $long = get_post_meta( $post_to_show[$i], 'codespacing_progress_map_lng');
-        $coord[$post_to_show[$i]] = array($lat, $long);
+        
+        if(!empty($lat) && !empty($long)){
+            $coord[$post_to_show[$i]] = array($lat[0], $long[0]);
+        }
     }
-    
-    print_r($coord);
     
      // now $coord is an array with labeled with id of post
      try {
