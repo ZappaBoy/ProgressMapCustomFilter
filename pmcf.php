@@ -168,12 +168,19 @@ if( !function_exists("pmcf_show_result")) {
 
         $post_to_show = pmcf_process_the_answer($categories, $days);
 
+        $output = '';
         if($days == 0) {
-            return '<div class="result"><div class="map-div full">' . do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', $post_to_show) . '"' . ' travel_mode="DRIVING"]'). '</div></div>';
+            $output .= '<div class="result"><div class="map-div full">' . do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', $post_to_show) . '"' . ' travel_mode="DRIVING"]'). '</div></div>';
         } else {
-            return '<div class="result">' . get_maps_using_clustering($post_to_show, $days, strtotime($_POST['startDate'])) . '</div>';
+            $output .= '<div class="result">' . get_maps_using_clustering($post_to_show, $days, strtotime($_POST['startDate'])) . '</div>';
             //return get_maps_for_days($post_to_show, $days);
         }
+
+        if (class_exists('EM_Events')) {
+            print_r(EM_Events::get( array('limit'=>10,'orderby'=>'name')) );
+        }
+
+        return $output;
 
         //return do_shortcode('[cspm_main_map id="11431" post_ids=' . '"' . $post_to_show . '"' . ']');
     }
@@ -189,14 +196,14 @@ function get_maps_using_clustering($post_to_show, $days, $start_date){
     for($i = 0; $i < $num_of_poi; ++$i) {
         $lat = get_post_meta( $post_to_show[$i], 'codespacing_progress_map_lat');
         $long = get_post_meta( $post_to_show[$i], 'codespacing_progress_map_lng');
-        
+
         if(!empty($lat) && !empty($long)){
             $coord[$post_to_show[$i]] = array($lat[0], $long[0]);
         }
     }
-    
-     // now $coord is an array with labeled with id of post
-     try {
+
+    // now $coord is an array with labeled with id of post
+    try {
         $kmeans = new KMeans($days); //Number of cluster cannot be the same of the days because there are clusters with only once post
         $clusters = $kmeans->cluster($coord); //every cluster contains the ids of post
         $output = '';
@@ -233,11 +240,11 @@ function get_maps_using_clustering($post_to_show, $days, $start_date){
         }
         $output .= '</div>';
         return $output;
-    
-    
-     } catch (Clustering\InvalidArgumentException $e) {
-         //ignored
-     }
+
+
+    } catch (Clustering\InvalidArgumentException $e) {
+        //ignored
+    }
 }
 
 function get_maps_for_days($post_to_show, $days) {
@@ -390,17 +397,34 @@ function categories_slug($cat) {
 function get_date_transalted($date_timestamp) {
     $lang = function_exists("pll_current_language")? pll_current_language() : "it"; //it, en, fr
 
+
+
     switch($lang) {
         case "it":
-            setlocale(LC_TIME, 'it_IT.UTF-8');
-            return ucwords(strftime("%e %B, %G", $date_timestamp));
+            $fmt = new IntlDateFormatter('it_IT',
+                IntlDateFormatter::LONG,
+                IntlDateFormatter::NONE ,
+                'Europe/Berlin',
+                IntlDateFormatter::GREGORIAN);
+
+            return $fmt->format($date_timestamp);
 
         case 'en':
-            setlocale(LC_TIME, 'en_US.UTF-8');
-            return ucwords(strftime("%e %B, %G", $date_timestamp));
+            $fmt = new IntlDateFormatter('en_US',
+                IntlDateFormatter::LONG,
+                IntlDateFormatter::NONE ,
+                'Europe/Berlin',
+                IntlDateFormatter::GREGORIAN);
+
+            return $fmt->format($date_timestamp);
 
         case 'fr':
-            setlocale(LC_TIME, 'fr_FR.UTF-8');
-            return ucwords(strftime("%e %B, %G", $date_timestamp));
+            $fmt = new IntlDateFormatter('fr_FR',
+                IntlDateFormatter::LONG,
+                IntlDateFormatter::NONE ,
+                'Europe/Berlin',
+                IntlDateFormatter::GREGORIAN);
+
+            return $fmt->format($date_timestamp);
     }
 }
