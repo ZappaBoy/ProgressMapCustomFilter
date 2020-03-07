@@ -17,10 +17,10 @@ require_once plugin_dir_path( __FILE__ ) . "Clustering/KMeans.php";
 
 function enq_scripts() {
     //load script to handle form
-    wp_enqueue_script('pmcf_jquery_script', plugin_dir_url(__FILE__) . "/script/main.js", array('jquery'), null, true);
+    wp_enqueue_script('pmcf_jquery_script', plugin_dir_url(__FILE__) . "/script/main.js", array('jquery'), null, false);
 
     //load script and style to handle datepicker
-    wp_enqueue_script('flatpickr_script', "https://cdn.jsdelivr.net/npm/flatpickr", array('jquery'), null, true);
+    wp_enqueue_script('flatpickr_script', "https://cdn.jsdelivr.net/npm/flatpickr", array('jquery'), null, false);
 
     //load script to handle redirect
     wp_enqueue_script('redirect_script', "https://cdn.jsdelivr.net/npm/jquery.redirect@1.1.4/jquery.redirect.min.js", array('jquery'), null, true);
@@ -30,9 +30,16 @@ function enq_scripts() {
     wp_enqueue_style('flatpickr_style', "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css");
 }
 
+function enq_script_for_itinerario() {
+    wp_enqueue_script('pmcf__itinerario_jquery_script', plugin_dir_url(__FILE__) . "/script/itinerario.js", array('jquery'), null, false);
+    wp_enqueue_style( 'pmcf_itinerario_style', plugin_dir_url(__FILE__) . "/css/itinerario.css" );
+}
+
 // Add the functions to WP loading list.
 add_action( 'wp_enqueue_scripts', 'enq_scripts' );
 
+// Add the functions to WP loading list.
+add_action( 'wp_enqueue_scripts', 'enq_script_for_itinerario' );
 
 add_shortcode("pmcf_search_itineraries", "pmcf_show_form" );
 if( !function_exists("pmcf_show_form")) {
@@ -143,6 +150,7 @@ if( !function_exists("pmcf_show_form")) {
 add_shortcode("pmcf_show_itinerary", "pmcf_show_result" );
 if( !function_exists("pmcf_show_result")) {
     function pmcf_show_result($attr) {
+
         /*$ids = htmlspecialchars($_GET['selected_post_ids']);
         $post_to_show = str_replace("-",",", $ids);*/
 
@@ -155,14 +163,15 @@ if( !function_exists("pmcf_show_result")) {
             $end_date = htmlspecialchars($_POST['endDate']);
             $diff = abs(strtotime($start_date) - strtotime($end_date));
             $days = floor(($diff)/ (60*60*24));
+            $days += 1; //the plugin need full days
         }
 
         $post_to_show = pmcf_process_the_answer($categories, $days);
 
         if($days == 0) {
-            return do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', $post_to_show) . '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
+            return '<div class="result"><div class="map-div full">' . do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', $post_to_show) . '"' . ' travel_mode="DRIVING"]'). '</div></div>';
         } else {
-            return get_maps_using_clustering($post_to_show, $days);
+            return '<div class="result">' . get_maps_using_clustering($post_to_show, $days, strtotime($_POST['startDate'])) . '</div>';
             //return get_maps_for_days($post_to_show, $days);
         }
 
@@ -170,12 +179,13 @@ if( !function_exists("pmcf_show_result")) {
     }
 }
 
-function get_maps_using_clustering($post_to_show, $days){
+function get_maps_using_clustering($post_to_show, $days, $start_date){
     //count number of post to get coords
     $num_of_poi = count($post_to_show);
 
     $coord = array();
 
+    //build dataset of coords
     for($i = 0; $i < $num_of_poi; ++$i) {
         $lat = get_post_meta( $post_to_show[$i], 'codespacing_progress_map_lat');
         $long = get_post_meta( $post_to_show[$i], 'codespacing_progress_map_lng');
@@ -190,24 +200,38 @@ function get_maps_using_clustering($post_to_show, $days){
         $kmeans = new KMeans($days); //Number of cluster cannot be the same of the days because there are clusters with only once post
         $clusters = $kmeans->cluster($coord); //every cluster contains the ids of post
         $output = '';
-        
+
+        $output .= '<div class="days-buttons">';
+        for($i = 1; $i<=$days; $i++) {
+            $output .= '<button class="button-day-' . $i . '" type="button">' . get_date_transalted($start_date + ($i - 1)*+ (60*60*24)) . '</button>';
+        }
+        $output .= '</div>';
+
+
+        $day_counter =1;
+        $output .= '<div class="maps-container">';
         foreach ($clusters as $cluster => $post_ids) {
+            $output .= '<div class="item-day">';
+
             $post_to_show = array();
-         
+
+            $i =0;
+            $output .= '<ol class="info info-day-' . $day_counter . '">';
             foreach ($post_ids as $post_id => $coord) {
                 $post_to_show[$i] = $post_id;
                 $i++;
+                $output .= '<li><a href="' . get_permalink($post_id).'">' . get_the_title($post_id) . ' - ' . htmlspecialchars(get_field('COMUNE'), $post_id) . '</a></li>';
             }
-            
-            $output .= '<div class="maps-container">';
-        
-            $output .= '<div class="day-' . $i . '">';
-            $output .= do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', $post_to_show ). '"' . ' travel_mode="DRIVING" height="700px" width="1200px"]');
+            $output .= '</ol>';
+
+            $output .= '<div class="map-div map-day-' . $day_counter . '">';
+            $output .= do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', $post_to_show ). '"' . ' travel_mode="DRIVING"]');
             $output .= '</div>';
-        
+
             $output .= '</div>';
+            $day_counter++;
         }
-        
+        $output .= '</div>';
         return $output;
     
     
@@ -361,4 +385,22 @@ if( !function_exists("pmcf_process_the_answer")) {
 
 function categories_slug($cat) {
     return str_replace(' ', "-", strtolower($cat)) . "-risorse";
+}
+
+function get_date_transalted($date_timestamp) {
+    $lang = function_exists("pll_current_language")? pll_current_language() : "it"; //it, en, fr
+
+    switch($lang) {
+        case "it":
+            setlocale(LC_TIME, 'it_IT.UTF-8');
+            return ucwords(strftime("%e %B, %G", $date_timestamp));
+
+        case 'en':
+            setlocale(LC_TIME, 'en_US.UTF-8');
+            return ucwords(strftime("%e %B, %G", $date_timestamp));
+
+        case 'fr':
+            setlocale(LC_TIME, 'fr_FR.UTF-8');
+            return ucwords(strftime("%e %B, %G", $date_timestamp));
+    }
 }
