@@ -197,10 +197,39 @@ function get_maps_using_clustering($post_to_show, $days, $start_date, $end_date)
         }
     }
 
+    // $events = array();
+    // if (class_exists('EM_Events')) {
+    //     $start_date_formatted_for_event = date("Y-m-d", $start_date);
+    //     $end_date_formatted_for_event = date("Y-m-d", $end_date);
+    //     $events = EM_Events::get(array('limit' => 20, 'orderby' => 'name', 'scope' => $start_date_formatted_for_event . ',' . $end_date_formatted_for_event));
+    // }
+
+    // $events_id = array();
+    // foreach ($events as $index => $event){
+    //     $events_id[$index] = $event->post_id;
+
+    //     $lat = get_post_meta( $events_id[$index], 'codespacing_progress_map_lat');
+    //     $long = get_post_meta( $events_id[$index], 'codespacing_progress_map_lng');
+
+    //     if(!empty($lat) && !empty($long)){
+    //         $coord[$events_id[$index]] = array($lat[0], $long[0]);
+    //     }
+    // }
+    
     // now $coord is an array with labeled with id of post
     try {
         $kmeans = new KMeans($days); //Number of cluster cannot be the same of the days because there are clusters with only once post
         $clusters = $kmeans->cluster($coord); //every cluster contains the ids of post
+        
+        // Events not need in clusters
+        $events = array();
+        if (class_exists('EM_Events')) {
+            $start_date_formatted_for_event = date("Y-m-d", $start_date);
+            $end_date_formatted_for_event = date("Y-m-d", $end_date);
+            $events = EM_Events::get(array('limit' => 20, 'orderby' => 'name', 'scope' => $start_date_formatted_for_event . ',' . $end_date_formatted_for_event));
+        }
+        ///////
+        
         $output = '';
 
         $output .= '<div class="days-buttons">';
@@ -210,23 +239,51 @@ function get_maps_using_clustering($post_to_show, $days, $start_date, $end_date)
         $output .= '</div>';
 
 
-        $day_counter =1;
+        $day_counter = 1;
         $output .= '<div class="maps-container">';
         foreach ($clusters as $cluster => $post_ids) {
             $output .= '<div class="item-day">';
 
             $post_to_show = array();
 
-            $i =0;
+            $i = 0;
             $output .= '<ol class="info info-day-' . $day_counter . '">';
+            
+            /// Added fot events
+            if (count($events > 0)){
+                $ev_date = $start_date + ($day_counter)*+ (60*60*24);
+                
+                $event_coord = array();
+                foreach ($events as $index => $event){
+            
+                    $lat = get_post_meta( $event->post_id, 'codespacing_progress_map_lat');
+                    $long = get_post_meta( $event->post_id, 'codespacing_progress_map_lng');
+                    $ev_start_date = strtotime($event->event_start_date);
+                    $ev_end_date = strtotime($event->event_end_date);
+                    
+                    if(!empty($lat) && !empty($long) ){
+                        if ($ev_start_date + (60*60*24) <= $ev_date && $ev_end_date + (60*60*24) >= $ev_date ) {
+                            $post_ids[$event->post_id] = array($lat[0], $long[0]);
+                        }
+                    }
+                }
+            }
+            ///////////////////
+            
             foreach ($post_ids as $post_id => $coord) {
                 $post_to_show[$i] = $post_id;
-                $i++;
+                //TODO REMOVE
+                $output .= $post_to_show[$i];
+                
+                
                 $output .= '<li><a href="' . get_permalink($post_id).'">' . get_the_title($post_id) . ' - ' . htmlspecialchars(get_field('COMUNE'), $post_id) . '</a></li>';
+                //$output .= '<li><a href="' . get_permalink($post_id).'">' .  . ' - ' . htmlspecialchars(get_field('COMUNE'), $post_id) . '</a></li>';
+                $i++;
             }
             $output .= '</ol>';
 
             $output .= '<div class="map-div map-day-' . $day_counter . '">';
+            
             $output .= do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', $post_to_show ). '"' . ' travel_mode="DRIVING"]');
             $output .= '</div>';
 
@@ -235,25 +292,21 @@ function get_maps_using_clustering($post_to_show, $days, $start_date, $end_date)
         }
         $output .= '</div>';
 
+        if(count($events) > 0) {
+            $output .= "'<h4>Eventi in questi giorni</h4>";
 
-        if (class_exists('EM_Events')) {
-            $start_date_formatted_for_event = date ( "Y-m-d", $start_date );
-            $end_date_formatted_for_event = date ( "Y-m-d", $end_date );
-            $events = EM_Events::get( array('limit'=>10,'orderby'=>'name', 'scope' => $start_date_formatted_for_event.','.$end_date_formatted_for_event)) ;
-            if(count($events) > 0) {
-                $output .= "'<h4>Eventi in questi giorni</h4>";
-
-                foreach ($events as $event) {
-                    $output.= do_shortcode('[fusion_countdown countdown_end="'.$event->event_start_date . ' '.$event->event_start_time.'" timezone="" show_weeks="" border_radius="" heading_text="'.$event->event_name.'" subheading_text="" link_url="'.get_permalink($event->post_id).'" link_text="Vai all\'evento" link_target="_blank" hide_on_mobile="small-visibility,medium-visibility,large-visibility" class="" id="" background_color="" background_image="'.get_the_post_thumbnail_url($event->post_id, 'full').'" background_position="" background_repeat="" counter_box_color="" counter_text_color="" heading_text_color="" subheading_text_color="" link_text_color="" /]');
-                }
+            foreach ($events as $event) {
+                $output.= do_shortcode('[fusion_countdown countdown_end="'.$event->event_start_date . ' '.$event->event_start_time.'" timezone="" show_weeks="" border_radius="" heading_text="'.$event->event_name.'" subheading_text="" link_url="'.get_permalink($event->post_id).'" link_text="Vai all\'evento" link_target="_blank" hide_on_mobile="small-visibility,medium-visibility,large-visibility" class="" id="" background_color="" background_image="'.get_the_post_thumbnail_url($event->post_id, 'full').'" background_position="" background_repeat="" counter_box_color="" counter_text_color="" heading_text_color="" subheading_text_color="" link_text_color="" /]');
             }
-
         }
+
+
         return $output;
 
 
     } catch (Clustering\InvalidArgumentException $e) {
         //ignored
+        return "Error";
     }
 }
 
@@ -382,7 +435,9 @@ if( !function_exists("pmcf_process_the_answer")) {
                 'fields' => 'ids',
                 'orderby' => 'rand',
                 'post__not_in' => (array)$poi,
-                'posts_per_page' => $proportion
+                'posts_per_page' => $proportion,
+                'post_type' => 'post' ,
+                'post_status' => 'publish'
             );
             $query = new WP_Query($query_args);
 
@@ -406,8 +461,6 @@ function categories_slug($cat) {
 
 function get_date_transalted($date_timestamp) {
     $lang = function_exists("pll_current_language")? pll_current_language() : "it"; //it, en, fr
-
-
 
     switch($lang) {
         case "it":
