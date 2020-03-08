@@ -150,7 +150,6 @@ if( !function_exists("pmcf_show_form")) {
 add_shortcode("pmcf_show_itinerary", "pmcf_show_result" );
 if( !function_exists("pmcf_show_result")) {
     function pmcf_show_result($attr) {
-
         /*$ids = htmlspecialchars($_GET['selected_post_ids']);
         $post_to_show = str_replace("-",",", $ids);*/
 
@@ -172,12 +171,8 @@ if( !function_exists("pmcf_show_result")) {
         if($days == 0) {
             $output .= '<div class="result"><div class="map-div full">' . do_shortcode('[cspm_route_map post_ids=' . '"' . implode(',', $post_to_show) . '"' . ' travel_mode="DRIVING"]'). '</div></div>';
         } else {
-            $output .= '<div class="result">' . get_maps_using_clustering($post_to_show, $days, strtotime($_POST['startDate'])) . '</div>';
+            $output .= '<div class="result">' . get_maps_using_clustering($post_to_show, $days, strtotime($_POST['startDate']), strtotime($_POST['endDate'])) . '</div>';
             //return get_maps_for_days($post_to_show, $days);
-        }
-
-        if (class_exists('EM_Events')) {
-            print_r(EM_Events::get( array('limit'=>10,'orderby'=>'name')) );
         }
 
         return $output;
@@ -186,7 +181,7 @@ if( !function_exists("pmcf_show_result")) {
     }
 }
 
-function get_maps_using_clustering($post_to_show, $days, $start_date){
+function get_maps_using_clustering($post_to_show, $days, $start_date, $end_date){
     //count number of post to get coords
     $num_of_poi = count($post_to_show);
 
@@ -239,6 +234,21 @@ function get_maps_using_clustering($post_to_show, $days, $start_date){
             $day_counter++;
         }
         $output .= '</div>';
+
+
+        if (class_exists('EM_Events')) {
+            $start_date_formatted_for_event = date ( "Y-m-d", $start_date );
+            $end_date_formatted_for_event = date ( "Y-m-d", $end_date );
+            $events = EM_Events::get( array('limit'=>10,'orderby'=>'name', 'scope' => $start_date_formatted_for_event.','.$end_date_formatted_for_event)) ;
+            if(count($events) > 0) {
+                $output .= "'<h4>Eventi in questi giorni</h4>";
+
+                foreach ($events as $event) {
+                    $output.= do_shortcode('[fusion_countdown countdown_end="'.$event->event_start_date . ' '.$event->event_start_time.'" timezone="" show_weeks="" border_radius="" heading_text="'.$event->event_name.'" subheading_text="" link_url="'.get_permalink($event->post_id).'" link_text="Vai all\'evento" link_target="_blank" hide_on_mobile="small-visibility,medium-visibility,large-visibility" class="" id="" background_color="" background_image="'.get_the_post_thumbnail_url($event->post_id, 'full').'" background_position="" background_repeat="" counter_box_color="" counter_text_color="" heading_text_color="" subheading_text_color="" link_text_color="" /]');
+                }
+            }
+
+        }
         return $output;
 
 
